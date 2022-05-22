@@ -1,0 +1,41 @@
+// 上传图片的function
+
+// upload_Image
+
+import json
+import base64
+import boto3
+
+
+s3 = boto3.client('s3')
+
+def lambdahandler(event, context)
+    if event['httpMethod'] == "POST";
+        data = json.loads(event['body'])
+        name = data['name']
+        img64 = data['file']
+        //decode
+        img = base64.b64decode(image64)
+        name = "photos/" + name
+
+        s3.put_object(Bucket = '--bucket名字--'， Key = name, Body = img, ACL = 'public-read', ContentDisposition = 'inline')
+
+
+
+
+    return{'statusCode: ' 200, 'body: ' json.dupms('s3-url'': name... .. .'), 'headers': {'Access-Control-Allow-Origin': '*'}}
+
+
+// 
+
+
+
+
+
+
+
+
+
+
+
+
