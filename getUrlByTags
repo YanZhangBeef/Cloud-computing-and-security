@@ -3,6 +3,9 @@ import boto3
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('imageTags')
+s3_client = boto3.client('s3')
+#dydb_client = boto3.client('dynamodb')
+#TABLE_NAME = 'imageTags'
 
 def lambda_handler(event, context):
 
@@ -45,6 +48,42 @@ def lambda_handler(event, context):
             'statusCode': 200,
             'body': json.dumps(urlFeedback)
         }
+        
+    if http_methods == 'DELETE':
+        body = json.loads(event['body'])
+        urlToDelete = body['url']
+        
+        """tagList = []
+        for queryIndex in range(tagLen):
+            tagList.append(event['queryStringParameters']['tag' + str(queryIndex+1)]) #用户的输入的tag列表
 
+        urlFeedback = {}
+        urlList = []"""
+
+        result = table.scan()
+        resultItems = result['Items']
+        deleteFeedback = {}
+        
+        for i in resultItems:
+            imageUrl = i['url']
+            if imageUrl == urlToDelete:
+                table.delete_item(
+                    Key={
+                        'id': i['id']
+                    }
+                )
+                s3_client.delete_object(
+                    Bucket='imagetodetect',
+                    Key = i['url'].split('https://imagetodetect.s3.amazonaws.com/')[1]
+                    #Key='000000031703.jpg'
+                )
+                deleteFeedback['delete'] = imageUrl
+                response = {
+                    'statusCode': 200,
+                    'body': json.dumps(deleteFeedback)
+                }
+                break
+    
+    
     #return urlFeedback (Change if just need the body)
     return response
