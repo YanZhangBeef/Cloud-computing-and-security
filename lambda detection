@@ -14,8 +14,6 @@ s3_client = boto3.client('s3')
 dynamodb = boto3.client('dynamodb')
 TABLE_NAME = 'imageTags'
 
-#s3_client.download_file(bucketName,objectName,fileName)
-
 def load_model(configpath,weightspath):
     # load our YOLO object detector trained on COCO dataset (80 classes)
     print("[INFO] loading YOLO from disk...")
@@ -26,7 +24,8 @@ def lambda_handler(event, context):
     for record in event['Records']:
         bucket = record['s3']['bucket']['name']
         key = unquote_plus(record['s3']['object']['key'])
-        print("File {0} uploaded to {1} bucket".format(key, bucket))
+        url = "https://" + str(bucket) + ".s3.amazonaws.com/" + str(key)
+        #print("File {0} uploaded to {1} bucket".format(key, bucket))
         s3_client.download_file(bucket, key, "/tmp/"+key)
         s3_client.download_file("yolo-g", "coco.names", "/tmp/coco.names")
         s3_client.download_file("yolo-g", "yolov3-tiny.cfg", "/tmp/yolov3-tiny.cfg")
@@ -39,27 +38,20 @@ def lambda_handler(event, context):
         # load the neural net.  Should be local to this method as its multi-threaded endpoint
         nets = load_model("/tmp/yolov3-tiny.cfg", "/tmp/yolov3-tiny.weights")
         Lables=get_labels("/tmp/coco.names")
-        #result = do_prediction(image, nets, Lables, id)
-        result = {}
-
-
-        """csvcontent = csvfile['Body'].read().decode('utf8').splitlines()
-        for line in csvcontent:
-            tokens = line.strip().split(",")
-            if len(tokens) > 2:
-                data = {}
-                data['id'] = {'S': str(uuid.uuid4())}
-                data['title'] = {'S': tokens[0].strip()}
-                data['desc'] = {'S': tokens[1].strip()}
-                data['done'] = {'S': tokens[2].strip()}
-                response = dynamodb.put_item(TableName=TABLE_NAME, Item=data)"""
+        result = do_prediction(image, nets, Lables, id)
+        data = {}
+        data['id'] = {'S': str(result['id'])}
+        data['tag'] = {'S': str(result['tag'])}
+        data['url'] = {'S': url}
+        response = dynamodb.put_item(TableName=TABLE_NAME, Item=data)
+        
     return {
         'statusCode': 200,
         'body': json.dumps('Tags successfully inserted into database...'+str(result))
     }
 
 # construct the argument parse and parse the arguments
-confthres = 0.5
+confthres = 0.3
 nmsthres = 0.1
 
 def get_labels(labels_path):
@@ -68,29 +60,12 @@ def get_labels(labels_path):
     LABELS = open(lpath).read().strip().split("\n")
     return LABELS
 
-
-"""def get_weights(weights_path):
-    # derive the paths to the YOLO weights and model configuration
-    weightsPath = os.path.sep.join([yolo_path, weights_path])
-    return weightsPath
-
-def get_config(config_path):
-    configPath = os.path.sep.join([yolo_path, config_path])
-    return configPath"""
-
-"""def load_model(configpath,weightspath):
-    # load our YOLO object detector trained on COCO dataset (80 classes)
-    print("[INFO] loading YOLO from disk...")
-    net = cv2.dnn.readNetFromDarknet(configpath, weightspath)
-    return net"""
-
 def do_prediction(image,net,LABELS,id):
 
     (H, W) = image.shape[:2]
     # determine only the *output* layer names that we need from YOLO
     ln = net.getLayerNames()
-    #ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
-    ln = net.getUnconnectedOutLayers()
+    ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
     # construct a blob from the input image and then perform a forward
     # pass of the YOLO object detector, giving us our bounding boxes and
@@ -146,26 +121,22 @@ def do_prediction(image,net,LABELS,id):
 
                 confidences.append(float(confidence))
                 classIDs.append(classID)
+                #return "end"
 
     # apply non-maxima suppression to suppress weak, overlapping bounding boxes
     idxs = cv2.dnn.NMSBoxes(boxes, confidences, confthres,
                             nmsthres)
 
-    # TODO Prepare the output as required to the assignment specification
     # ensure at least one detection exists
     result['id'] = id
-    result['tag'] = LABELS[classIDs[0]]
-    """if len(idxs) > 0:
+    tag = []
+    if len(idxs) > 0:
         # loop over the indexes we are keeping
         for i in idxs.flatten():
-            print("detected item:{}, accuracy:{}, X:{}, Y:{}, width:{}, height:{}".format(LABELS[classIDs[i]],
-                                                                                             confidences[i],
-                                                                                             boxes[i][0],
-                                                                                             boxes[i][1],
-                                                                                             boxes[i][2],
-                                                                                             boxes[i][3]))
-            detected_result = {'label': LABELS[classIDs[i]], 'accuracy': confidences[i], 
-                               'rectangle': {"height" : boxes[i][0], "left": boxes[i][1], "top": boxes[i][2], "width": boxes[i][3]}}
-            result.setdefault('objects', []).append(detected_result)"""
+            if LABELS[classIDs[i]] not in tag:
+                tag.append(LABELS[classIDs[i]])
+    else:
+        tag.append('None')
     
+    result['tag'] = tag
     return result
