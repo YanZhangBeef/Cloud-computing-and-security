@@ -1,0 +1,50 @@
+import json
+import boto3
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('imageTags')
+
+def lambda_handler(event, context):
+
+    http_methods = event['httpMethod']
+    if http_methods == 'GET':
+        tagLen = len(event['queryStringParameters'])
+        tagList = []
+        for queryIndex in range(tagLen):
+            tagList.append(event['queryStringParameters']['tag' + str(queryIndex+1)]) #用户的输入的tag列表
+
+        urlFeedback = {}
+        urlList = []
+
+        result = table.scan()
+        resultItems = result['Items']
+        
+        for i in resultItems:
+            try:
+                imageTagsList = i['tag'].split(',') #数据库中的第i张图片的tagList
+                meet = True
+                for tag in tagList: #用户输入的tag
+                    if tag in imageTagsList:
+                        pass
+                    else:
+                        meet = False
+                        break
+                if meet:
+                    try:
+                        url = i['url']
+                        urlList.append(url)
+                        continue
+                    except:
+                        pass
+
+            except:
+                pass
+    
+        urlFeedback["links"] = urlList
+        response = {
+            'statusCode': 200,
+            'body': json.dumps(urlFeedback)
+        }
+
+    #return urlFeedback (Change if just need the body)
+    return response
