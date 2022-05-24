@@ -54,14 +54,21 @@ document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {
     // Show thumbnail for image files
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
-  
       reader.readAsDataURL(file);
+
       reader.onload = () => {
         thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
+        
+        var data = JSON.stringify(reader.result);
+       
+        console.log(data);
+        
       };
+      
     } else {
       thumbnailElement.style.backgroundImage = null;
     }
+    
   }
  
   
