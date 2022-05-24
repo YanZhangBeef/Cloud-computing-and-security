@@ -1,0 +1,8 @@
+<script>
+    const hashObj = window.location.hash.replace('#','').split('&').reduce((prev,item) => {return Object.assign({[item.split('=')[0]]: item.split('=')[1]},prev); }, {});
+    if(hashObj.console.error){
+        console.log("Could not hash URL");
+    }
+    idToken = hashObj.id_token;
+    console.log("idToken: " + idToken);
+    sessionStorage.setItem("idToken",idToken);
