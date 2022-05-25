@@ -1,0 +1,57 @@
+import json
+import boto3
+import base64
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('imageTags')
+s3_client = boto3.client('s3')
+s3_bucket = 'imagetodetect'
+
+def lambda_handler(event, context):
+
+    http_methods = event['httpMethod']
+
+    if http_methods == 'GET':
+        # The way to call: body: nothing
+        #                  Query Params: delete=<url>
+        
+        # https://6hyu9pfbw1.execute-api.us-east-1.amazonaws.com/dev/delete?delete=https://imagetodetect.s3.amazonaws.com/5.jpg
+        # Method: GET
+        # body: nothing
+        
+        urlToDelete = event['queryStringParameters']['delete']
+
+        result = table.scan()
+        resultItems = result['Items']
+        deleteFeedback = {'delete':urlToDelete}
+        deleteStatus = False
+        
+        for i in resultItems:
+            imageUrl = i['url']
+            if imageUrl == urlToDelete:
+                table.delete_item(
+                    Key={
+                        'id': i['id']
+                    }
+                )
+                s3_client.delete_object(
+                    Bucket='imagetodetect',
+                    Key = i['url'].split('https://imagetodetect.s3.amazonaws.com/')[1]
+                    # e.g. Key='000000031703.jpg'
+                )
+                deleteFeedback['status'] = "success"
+                deleteStatus = True
+                response = {
+                    'statusCode': 200,
+                    'body': json.dumps(deleteFeedback)
+                }
+                break
+        
+        if deleteStatus == False:
+            deleteFeedback['status'] = "not found"
+            response = {
+                'statusCode': 200,
+                'body': json.dumps(deleteFeedback)
+            }
+
+    return response
