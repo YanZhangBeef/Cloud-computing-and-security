@@ -1,0 +1,68 @@
+import json
+import boto3
+import base64
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('imageTags')
+s3_client = boto3.client('s3')
+s3_bucket = 'imagetodetect'
+
+def lambda_handler(event, context):
+
+    http_methods = event['httpMethod']
+
+    if http_methods == 'POST':
+        # The way to call: body: "base64Code"
+        #                  Query Params: ?filenameWithoutExtension=name
+        # The way to produce baseCode:
+        """
+        
+            import base64
+            with open ("<imageName>", 'rb') as image_file:
+                base64Code =  base64.b64encode(image_file.read()).decode('utf-8')
+        
+        """
+        # https://6hyu9pfbw1.execute-api.us-east-1.amazonaws.com/dev/api?filenameWithoutExtension=exampleName
+        # Method: POST
+        # body: The long base64Code
+        
+        file_content = event["body"] # Should be base64 code
+        filename = event['queryStringParameters']['filenameWithoutExtension']
+        status = "notDone"
+        
+        with open("/tmp/" + filename+'.jpg', "wb") as f:
+            f.write(base64.b64decode(file_content))
+        
+        sameFilename = True
+        counter = 1
+        checkName = filename
+        endName = ''
+        
+        while sameFilename:
+            result = s3_client.list_objects_v2(Bucket=s3_bucket, Prefix=checkName+'.jpg')
+            if 'Contents' in result:
+                checkName = filename
+                checkName = filename + str(counter)
+                counter += 1
+                
+            elif counter == 1:
+                sameFilename = False
+                with open("/tmp/" + filename+'.jpg', 'rb') as data:
+                    s3_client.upload_fileobj(data, s3_bucket, filename+'.jpg')
+                    status = "success"
+                endName = filename+'.jpg'
+                
+            else:
+                sameFilename = False
+                with open("/tmp/" + filename+'.jpg', 'rb') as data:
+                    s3_client.upload_fileobj(data, s3_bucket, filename+str(counter-1)+'.jpg')
+                    status = "success"
+                endName = filename+str(counter-1)+'.jpg'
+                
+        uploadFeedback = {"url":"https://imagetodetect.s3.amazonaws.com/"+endName, "uploadBucket":s3_bucket, "status":status}
+        response = {
+            "statusCode": 200,
+            "body": json.dumps(uploadFeedback)
+        }
+
+    return response
