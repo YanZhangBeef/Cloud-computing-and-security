@@ -13,7 +13,7 @@ inputBox.onkeyup = (e)=>{
     if(userData){
         icon.onclick = ()=>{
             webLink = `https://bz1elq3bu6.execute-api.us-east-1.amazonaws.com/dev/dev?${userData}`;
-            webLink = `${userData}`
+            //webLink = `${userData}`
             linkTag.setAttribute("href", webLink);
             linkTag.click();
         }
@@ -42,7 +42,7 @@ function select(element){
     inputBox.value = selectData;
     icon.onclick = ()=>{
         webLink = `https://bz1elq3bu6.execute-api.us-east-1.amazonaws.com/dev/dev?${selectData}`;
-        webLink = `${userData}`
+        //webLink = `${userData}`
         linkTag.setAttribute("href", webLink);
         linkTag.click();
     }
