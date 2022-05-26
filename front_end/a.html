@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Dashboard</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" 
+  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" 
+  crossorigin="anonymous"></script>
+  <link rel = "stylesheet" type = "text/css" href="./style/style_Sign.css">
+  <link rel="stylesheet" 
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+
+<body>
+  <script>
+      var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance 
+        var url = "https://6hyu9pfbw1.execute-api.us-east-1.amazonaws.com/dev/api";
+        xmlhttp.open("POST", url, true);
+        xhr.withCredentials = true;
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        let obj = `{"url": "https://imagetodetect.s3.amazonaws.com/5.jpg","type": "1","tags": "person,car,bus"} `;
+        xmlhttp.send(JSON.stringify(obj));
+      
+      </script>
+</body>
+</html>

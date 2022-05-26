@@ -63,6 +63,15 @@ document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {
        
         console.log(data);
         
+        var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance  
+         //xmlhttp.withCredentials = true;
+        var url = "https://6hyu9pfbw1.execute-api.us-east-1.amazonaws.com/dev/api";
+        xmlhttp.open("POST", url, true);
+      
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.send(JSON.stringify(reader.result));
+
+
       };
       
     } else {
