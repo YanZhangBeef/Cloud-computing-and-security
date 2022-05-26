@@ -12,7 +12,7 @@ inputBox.onkeyup = (e)=>{
     let emptyArray = [];
     if(userData){
         icon.onclick = ()=>{
-            webLink = `https://bz1elq3bu6.execute-api.us-east-1.amazonaws.com/dev/dev?${userData}`;
+            webLink = `https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/getbytags?${userData}`;
             //webLink = `${userData}`
             linkTag.setAttribute("href", webLink);
             linkTag.click();
@@ -41,7 +41,7 @@ function select(element){
     let selectData = element.textContent;
     inputBox.value = selectData;
     icon.onclick = ()=>{
-        webLink = `https://bz1elq3bu6.execute-api.us-east-1.amazonaws.com/dev/dev?${selectData}`;
+        webLink = `https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/getbytags?${selectData}`;
         //webLink = `${userData}`
         linkTag.setAttribute("href", webLink);
         linkTag.click();
