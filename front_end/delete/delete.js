@@ -12,7 +12,7 @@ inputBox.onkeyup = (e)=>{
     let emptyArray = [];
     if(userData){
         icon.onclick = ()=>{
-            webLink = `https://6hyu9pfbw1.execute-api.us-east-1.amazonaws.com/dev/delete?delete=${userData}`;
+            webLink = `https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/deleteimage?delete=${userData}`;
             linkTag.setAttribute("href", webLink);
             linkTag.click();
         }
@@ -34,13 +34,14 @@ inputBox.onkeyup = (e)=>{
     }else{
         searchWrapper.classList.remove("active"); //hide autocomplete box
     }
+    console.log(userData);
 }
 
 function select(element){
     let selectData = element.textContent;
     inputBox.value = selectData;
     icon.onclick = ()=>{
-        webLink = `https://6hyu9pfbw1.execute-api.us-east-1.amazonaws.com/dev/delete?delete=${selectData}`;
+        webLink = `https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/deleteimage?delete=${selectData}`;
         linkTag.setAttribute("href", webLink);
         linkTag.click();
     }

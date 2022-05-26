@@ -59,15 +59,37 @@ document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {
       reader.onload = () => {
         thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
 
-        console.log(JSON.stringify({"filename":filename.value, "base64":reader.result}));
-
         var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance  
          //xmlhttp.withCredentials = true;
-        var url = "https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/postimage";
+        var url = "https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/getbyimage";
+        xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4) {
+
+                if(xmlhttp.getResponseHeader('content-type')==='application/json'){
+                var result = JSON.parse(xmlhttp.responseText);
+                var details = result['links'];
+                //console.log(a);
+                var list = 	"List:"+"<br>";
+                    console.log(details);
+                    for(let i = 0; i<details.length;i++){
+                        list += details[i]+ "<br>";
+                    }
+                    document.getElementById("list").innerHTML = list;
+                    
+              if(result.code===-1){
+                        alert('error!!!');
+              }
+                } else {
+                    console.log(xmlhttp.responseText);
+            }
+            
+            }
+        }
         xmlhttp.open("POST", url, true);
+
       
         xmlhttp.setRequestHeader("Content-Type", "application/json");
-        xmlhttp.send(JSON.stringify({"filename":filename.value, "base64":reader.result})); 
+        xmlhttp.send(JSON.stringify({"base64":reader.result})); 
       };
       
     } else {
