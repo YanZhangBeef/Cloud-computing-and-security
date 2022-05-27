@@ -8,12 +8,23 @@ table = dynamodb.Table('imageTags')
 def lambda_handler(event, context):
 
     http_methods = event['httpMethod']
+    
+    if http_methods != 'GET':
+        response = {
+            'statusCode': 200,
+            'headers' : {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+            "Access-Control-Allow-Credentials" : 'true'
+            }
+        }
 
     if http_methods == 'GET':
         # The way to call: body: nothing
         #                  Query Params: tag1=tag&tag2=tag&tag3=...
         
-        # https://6hyu9pfbw1.execute-api.us-east-1.amazonaws.com/dev/api?tag1=person
+        # https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/getbytags?tag1=person
         # Method: GET
         # body: nothing
         
@@ -30,9 +41,9 @@ def lambda_handler(event, context):
         
         for i in resultItems:
             try:
-                imageTagsList = i['tag'].split(',') #数据库中的第i张图片的tagList
+                imageTagsList = i['tag'].split(',')
                 meet = True
-                for tag in tagList: #用户输入的tag
+                for tag in tagList:
                     if tag in imageTagsList:
                         pass
                     else:
@@ -52,7 +63,12 @@ def lambda_handler(event, context):
         urlFeedback["links"] = urlList
         response = {
             'statusCode': 200,
-            'body': json.dumps(urlFeedback)
+            'body' : json.dumps(urlFeedback),
+            'headers' : {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+            "Access-Control-Allow-Credentials" : 'true'
+            }
         }
-
     return response
