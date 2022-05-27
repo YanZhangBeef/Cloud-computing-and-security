@@ -60,7 +60,13 @@ def lambda_handler(event, context):
                 deleteStatus = True
                 response = {
                     'statusCode': 200,
-                    'body': json.dumps(deleteFeedback)
+                    'body': json.dumps(deleteFeedback),
+                    'headers' : {
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Headers': '*',
+                        'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+                        "Access-Control-Allow-Credentials" : 'true'
+                    }
                 }
                 break
         
