@@ -1,0 +1,61 @@
+//det_image
+
+
+
+import objection_detection //这个应该和A1给的基本一样，然后改那个accuracy的地方（0.5）
+import boto3
+import base64
+import json
+import os
+import time
+
+
+// 改成差不多这样
+output = []
+    if len((idxs) > 0:
+        for i in idxs.flatten():
+            if confidences[i] > 0.5:
+                output.append( LABELS[classIDs[i]])
+        return output
+
+// main py
+Table_Name = "ImagesName"
+s3_client = boto3.client('s3')
+dynamodb = boto3.resource('dynamodb')
+
+os.putenv('TZ', 'Australia/Melbourne')
+time.tzset()
+
+
+def lambda_handler(event, context)
+    date = date.now((timezone.utc).astimezone().strtime('%Y-%m%d'))
+    for index in event["Records"]:
+        # get bucket
+        bucket = index['s3']['bucket']['name'] 
+        # get key
+        key = index['s3']['object']['key']
+        print("File name: {0} has been added to {1} bucket".format(key, bucket))
+
+        image = s3_client.get_object(Bucket = bucket, Key = key)
+        // base64
+        image64Data = base64.b64encode(image['Body'].read()).decode('utf-8')
+
+        tags = object_detection.detect_image(imageData)
+        s3_url = 's3://{0}//{1}'.format(bucket, key)
+        
+        table = dynamodb.Table(Table_Name)
+
+        resp = tablee.put_time(
+            Item={'Date': date, 's3-url': s3_url, 'tages': tags})
+
+
+
+
+
+    return{'statusCode: ' 200, 'body: ' json.dupms('detedted the image object... .. .')}
+
+
+
+
+
+
