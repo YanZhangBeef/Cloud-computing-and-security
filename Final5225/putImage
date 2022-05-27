@@ -8,6 +8,18 @@ table = dynamodb.Table('imageTags')
 def lambda_handler(event, context):
 
     http_methods = event['httpMethod']
+    
+    if http_methods != 'PUT':
+        response = {
+            'statusCode': 200,
+            'headers' : {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+            "Access-Control-Allow-Credentials" : 'true'
+            }
+        }
+    
 
     if http_methods == 'PUT':
         try:
@@ -63,7 +75,7 @@ def lambda_handler(event, context):
                             ':val1': updatedTag
                         }
                     )
-                    updateStatus = 'added'
+                    updateStatus = 'added tag successfully'
                     break
 
                 if addOrRemove == "0":
@@ -83,21 +95,31 @@ def lambda_handler(event, context):
                             ':val1': updatedTag
                         }
                     )
-                    updateStatus = 'deleted'
+                    updateStatus = 'delete tag successfully'
                     break
         
-        
+        finalResult = table.scan()
+        finalResultItems = finalResult['Items']
+        for i in finalResultItems:
+            if urlToUpdate == i['url']:
+                finalImageTag = i['tag']
         
         updateFeedback['update'] = imageUrl
-        updateFeedback['tpye'] = addOrRemove
-        updateFeedback['tags'] = tags
+        #updateFeedback['tpye'] = addOrRemove
+        updateFeedback['new tags'] = updateStatus
         updateFeedback['status'] = updateStatus
         
         if updateStatus == 'notFound':
             updateFeedback['update'] = "notFound"
         response = {
             'statusCode': 200,
-             'body': json.dumps(updateFeedback)
+            'body': json.dumps(updateFeedback),
+            'headers' : {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+            "Access-Control-Allow-Credentials" : 'true'
+            }
         }
 
     return response
