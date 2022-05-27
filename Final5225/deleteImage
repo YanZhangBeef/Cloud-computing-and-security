@@ -10,8 +10,19 @@ s3_bucket = 'imagetodetect'
 def lambda_handler(event, context):
 
     http_methods = event['httpMethod']
+    
+    if http_methods != 'DELETE':
+        response = {
+            'statusCode': 200,
+            'headers' : {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+            "Access-Control-Allow-Credentials" : 'true'
+            }
+        }
 
-    if http_methods == 'GET':
+    if http_methods == 'DELETE':
         # The way to call: body: nothing
         #                  Query Params: delete=<url>
         
@@ -19,7 +30,13 @@ def lambda_handler(event, context):
         # Method: GET
         # body: nothing
         
-        urlToDelete = event['queryStringParameters']['delete']
+        try:
+            body = json.loads(event['body'])
+        except:
+            a = base64.b64decode(str(event['body']))
+            body = json.loads(a)
+        
+        urlToDelete = body['url']
 
         result = table.scan()
         resultItems = result['Items']
@@ -51,7 +68,13 @@ def lambda_handler(event, context):
             deleteFeedback['status'] = "not found"
             response = {
                 'statusCode': 200,
-                'body': json.dumps(deleteFeedback)
+                'body': json.dumps(deleteFeedback),
+                'headers' : {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+                "Access-Control-Allow-Credentials" : 'true'
+                }
             }
 
     return response
