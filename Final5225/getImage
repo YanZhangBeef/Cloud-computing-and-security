@@ -1,0 +1,74 @@
+import json
+import boto3
+import base64
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('imageTags')
+
+def lambda_handler(event, context):
+
+    http_methods = event['httpMethod']
+    
+    if http_methods != 'GET':
+        response = {
+            'statusCode': 200,
+            'headers' : {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+            "Access-Control-Allow-Credentials" : 'true'
+            }
+        }
+
+    if http_methods == 'GET':
+        # The way to call: body: nothing
+        #                  Query Params: tag1=tag&tag2=tag&tag3=...
+        
+        # https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/getbytags?tag1=person
+        # Method: GET
+        # body: nothing
+        
+        tagLen = len(event['queryStringParameters'])
+        tagList = []
+        for queryIndex in range(tagLen):
+            tagList.append(event['queryStringParameters']['tag' + str(queryIndex+1)]) # User's input tags list
+
+        urlFeedback = {}
+        urlList = []
+
+        result = table.scan()
+        resultItems = result['Items']
+        
+        for i in resultItems:
+            try:
+                imageTagsList = i['tag'].split(',')
+                meet = True
+                for tag in tagList:
+                    if tag in imageTagsList:
+                        pass
+                    else:
+                        meet = False
+                        break
+                if meet:
+                    try:
+                        url = i['url']
+                        urlList.append(url)
+                        continue
+                    except:
+                        pass
+
+            except:
+                pass
+    
+        urlFeedback["links"] = urlList
+        response = {
+            'statusCode': 200,
+            'body' : json.dumps(urlFeedback),
+            'headers' : {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+            "Access-Control-Allow-Credentials" : 'true'
+            }
+        }
+    return response

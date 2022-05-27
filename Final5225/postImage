@@ -1,0 +1,100 @@
+import json
+import boto3
+import base64
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('imageTags')
+s3_client = boto3.client('s3')
+s3_bucket = 'imagetodetect'
+
+def lambda_handler(event, context):
+
+    http_methods = event['httpMethod']
+    
+    if http_methods != 'POST':
+        response = {
+            'statusCode': 200,
+            'headers' : {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+            "Access-Control-Allow-Credentials" : 'true'
+            }
+        }
+    
+    if http_methods == 'POST':
+        # The way to call: body: {"filename":"","base64Code":""}
+        # The way to produce baseCode:
+        """
+        
+            import base64
+            with open ("<imageName>", 'rb') as image_file:
+                base64Code =  base64.b64encode(image_file.read()).decode('utf-8')
+        
+        """
+        # https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/postimage
+        # Method: POST
+        # body: {"filename":"aaa","base64":"data:image/jpeg;base64,/9j/4A..."}
+        
+        try:
+            body = json.loads(event["body"]) # Should be base64 code
+            codeReceive = body['base64']
+            tempList = codeReceive.split('data:image/jpeg;base64,')
+            base64Code = tempList[1]
+            filename = body["filename"]
+            status = "notDone"
+            
+            with open("/tmp/" + filename+'.jpg', "wb") as f:
+                f.write(base64.b64decode(base64Code))
+            
+            sameFilename = True
+            counter = 1
+            checkName = filename
+            endName = ''
+            
+            while sameFilename:
+                result = s3_client.list_objects_v2(Bucket=s3_bucket, Prefix=checkName+'.jpg')
+                if 'Contents' in result:
+                    checkName = filename
+                    checkName = filename + str(counter)
+                    counter += 1
+                    
+                elif counter == 1:
+                    sameFilename = False
+                    with open("/tmp/" + filename+'.jpg', 'rb') as data:
+                        s3_client.upload_fileobj(data, s3_bucket, filename+'.jpg')
+                        status = "success"
+                    endName = filename+'.jpg'
+                    
+                else:
+                    sameFilename = False
+                    with open("/tmp/" + filename+'.jpg', 'rb') as data:
+                        s3_client.upload_fileobj(data, s3_bucket, filename+str(counter-1)+'.jpg')
+                        status = "success"
+                    endName = filename+str(counter-1)+'.jpg'
+                    
+            uploadFeedback = {"url":"https://imagetodetect.s3.amazonaws.com/"+endName, "uploadBucket":s3_bucket, "status":status}
+            response = {
+                "statusCode": 200,
+                "body": json.dumps(uploadFeedback),
+                'headers' : {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+                "Access-Control-Allow-Credentials" : 'true'
+                }
+            }
+        except:
+            response = {
+            "statusCode": 500,
+            "body": json.dumps({"loadStatus":"failed"}),
+            'headers' : {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+            "Access-Control-Allow-Credentials" : 'true'
+            }
+        }
+            
+
+    return response
