@@ -34,11 +34,10 @@ def lambda_handler(event, context):
         """
         # https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/postimage
         # Method: POST
-        # body: {"filename":"aaa","url":"data:image/jpeg;base64,/9j/4A..."}
+        # body: {"filename":"aaa","base64":"data:image/jpeg;base64,/9j/4A..."}
         
         try:
             body = json.loads(event["body"]) # Should be base64 code
-        #try:
             codeReceive = body['base64']
             tempList = codeReceive.split('data:image/jpeg;base64,')
             base64Code = tempList[1]
@@ -87,7 +86,7 @@ def lambda_handler(event, context):
             }
         except:
             response = {
-            "statusCode": 200,
+            "statusCode": 500,
             "body": json.dumps({"loadStatus":"failed"}),
             'headers' : {
             'Access-Control-Allow-Origin': '*',
