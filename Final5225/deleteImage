@@ -23,12 +23,10 @@ def lambda_handler(event, context):
         }
 
     if http_methods == 'DELETE':
-        # The way to call: body: nothing
-        #                  Query Params: delete=<url>
-        
-        # https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/deleteimage?delete=https://imagetodetect.s3.amazonaws.com/aaa1.jpg
-        # Method: GET
-        # body: nothing
+        # https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/deletebyurl
+        # DELETE
+        # {"url":"<string>"}
+        # {"url": "https://imagetodetect.s3.amazonaws.com/5.jpg"}
         
         try:
             body = json.loads(event['body'])
@@ -54,7 +52,6 @@ def lambda_handler(event, context):
                 s3_client.delete_object(
                     Bucket='imagetodetect',
                     Key = i['url'].split('https://imagetodetect.s3.amazonaws.com/')[1]
-                    # e.g. Key='000000031703.jpg'
                 )
                 deleteFeedback['status'] = "success"
                 deleteStatus = True
