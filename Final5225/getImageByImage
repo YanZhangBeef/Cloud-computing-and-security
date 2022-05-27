@@ -45,9 +45,9 @@ def lambda_handler(event, context):
                 base64Code =  base64.b64encode(image_file.read()).decode('utf-8')
         
         """
-        # https://6hyu9pfbw1.execute-api.us-east-1.amazonaws.com/dev/serachbyimage
+        # https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/getbyimage
         # Method: POST
-        # body: The long base64Code
+        # body: {"base64":"data:image/jpeg;base64,/9j/4A..."}
     
     try:
         body = json.loads(event["body"]) # Should be base64 code
@@ -82,7 +82,7 @@ def lambda_handler(event, context):
             try:
                 imageTagsList = i['tag'].split(',') # The tagList of No.i image in the database
                 meet = True
-                for tag in tagList: #用户输入的tag
+                for tag in tagList:
                     if tag in imageTagsList:
                         pass
                     else:
