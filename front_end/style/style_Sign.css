@@ -18,6 +18,9 @@ body{
     box-sizing: border-box;
     padding: 70px 30px;
 }
+h3{
+    color: black;
+}
 .icon{
     width: 100px;
     height: 100px;
@@ -43,7 +46,7 @@ h1{
     border-bottom: 1px solid #fff;
     background: transparent;
     outline: node;
-    height: 20px;
+    height: 30px;
     color: #fff;
     font-size: 16px;
 }
