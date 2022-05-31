@@ -30,8 +30,8 @@ def lambda_handler(event, context):
         
         urlToUpdate = body['url']
         addOrRemove = body['type']
-        tags = body['tags'].split(',')
-        # https://gg5utofzpg.execute-api.us-east-1.amazonaws.com/dev/putimage
+        tags = body['tags'].split(',') #list
+        # https://6hyu9pfbw1.execute-api.us-east-1.amazonaws.com/dev/api
         # PUT
         # {"url":"<string>", "type":<string>, "tags":<string>}
         # {"url": "https://imagetodetect.s3.amazonaws.com/5.jpg","type": "1","tags": "person,car,bus"}
@@ -81,6 +81,7 @@ def lambda_handler(event, context):
                 if addOrRemove == "0":
                     imageTag = i['tag']
                     imageTagList = imageTag.split(',')
+                    #tagExtend = ''
                     for tagToUpdate in tags:
                         if tagToUpdate in imageTagList:
                             imageTagList.remove(tagToUpdate)
@@ -104,7 +105,8 @@ def lambda_handler(event, context):
                 finalImageTag = i['tag']
         
         updateFeedback['update'] = imageUrl
-        updateFeedback['new tags'] = updateStatus
+        #updateFeedback['tpye'] = addOrRemove
+        updateFeedback['new tags'] = finalImageTag
         updateFeedback['status'] = updateStatus
         
         if updateStatus == 'notFound':
